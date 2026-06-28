@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "defaultMode": "default"
+  },
+  "worktree": {
+    "baseRef": "fresh"
+  },
+  "effortLevel": "high",
+  "skipDangerousModePermissionPrompt": true,
+  "theme": "dark",
+  "remoteControlAtStartup": false,
+  "agentPushNotifEnabled": true,
+  "tui": "fullscreen"
+}

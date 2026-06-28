@@ -1,0 +1,12 @@
+# Ignore everything by default — only config is tracked.
+# This whitelist approach means new transcripts, caches, and any future secrets
+# are ignored automatically; nothing is committed unless explicitly allowed below.
+*
+
+!.gitignore
+!CLAUDE.md
+!settings.json
+!skills/
+!skills/**
+
+skills/job-search/
