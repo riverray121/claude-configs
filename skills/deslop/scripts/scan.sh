@@ -18,8 +18,9 @@ TARGET="${2:-}"
 ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 cd "$ROOT"
 
-# Source extensions in scope; everything else is ignored.
-EXTS='ts|tsx|js|jsx|mjs|cjs|svelte|vue|py|rb|go|rs|java|kt|kts|swift|scala|c|h|cc|cpp|hpp|cs|php|sh'
+# Source extensions in scope; everything else is ignored. Covers application
+# languages plus infrastructure-as-code (Terraform/HCL) and scripting dialects.
+EXTS='ts|tsx|js|jsx|mjs|cjs|svelte|vue|py|rb|go|rs|java|kt|kts|swift|scala|c|h|cc|cpp|hpp|cs|php|sh|bash|zsh|tf|tfvars|hcl|lua|dart|ex|exs|clj|cljs|cljc|erl|hs|ml|mli|r|pl|pm|groovy|gradle|sql|proto|zig|nim|jl|ps1|psm1'
 # Paths that are never deslopped: vendored, generated, build output, lockfiles.
 EXCLUDE='vendor/|third_party/|node_modules/|\.git/|build/|dist/|out/|target/|\.next/|\.svelte-kit/|__pycache__/|\.venv/|/venv/|coverage/|\.min\.(js|css)$|(^|/)[^/]*lock\.(json|ya?ml)$|(^|/)[^/]*\.lock$'
 
