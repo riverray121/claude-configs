@@ -12,13 +12,37 @@ under `docs/milestone-N-<slug>/`.
 This skill is deliberately slow and interactive. Each doc is a **discussion first,
 a file second.** Never run ahead of the user.
 
+## How every discussion runs (read this first)
+
+Each doc's discussion follows the same order — **never skip or reorder these:**
+
+1. **The user describes, at length, in their own words.** Open the discussion by
+   asking the user to describe the thing — the feature, the architecture, the
+   slicing — and then **stop and let them talk.** Do not propose a structure, a
+   shape, or options yet. The first substantive content comes from the user, not
+   you. If they give a little, ask them to keep going before you react.
+2. **Conversation.** React to what they said. Reflect it back, surface tensions
+   and trade-offs, think alongside them. This is a dialogue, not an interview —
+   contribute, don't just collect.
+3. **Clarifying questions, only as needed.** When — and only when — the
+   conversation hits a genuine fork or an unfilled gap, ask about *that specific
+   thing*. Questions come from the conversation; they are not a script you run up
+   front.
+
+**Never open a doc's discussion with questions, menus, or a proposed outline.**
+Leading with options is the failure mode this order exists to prevent — it puts
+your frame on the user's feature before they have described it. Ask them to
+describe it first, every time.
+
 ## The gate protocol (read this first)
 
 Three docs are produced in order: `design.md` → `architecture.md` →
 `implementation.md`. Each one passes through the same two gates:
 
-1. **Discuss.** Talk through the doc's content with the user. Ask clarifying
-   questions. Surface options and trade-offs. **Write nothing to disk.**
+1. **Discuss.** Talk through the doc's content with the user, following the
+   conversation order above — user describes first, then conversation, then
+   clarifying questions as needed. Surface options and trade-offs. **Write nothing
+   to disk.**
 2. **Confirm → write.** Only when the user signals they are happy with the
    discussion, write the doc.
 3. **Approve → advance.** Show the written doc. Only when the user approves it,
@@ -32,9 +56,17 @@ Three docs are produced in order: `design.md` → `architecture.md` →
   into design, or implementation detail into architecture.
 - One doc on screen at a time. Do not draft all three at once.
 
-Use the `AskUserQuestion` tool only for crisp either/or decisions inside a
-discussion (e.g. "Postgres or SQLite?"). Never use it to ask "is the doc ready" —
-that is a plain conversational question.
+Use the `AskUserQuestion` tool sparingly, and only once a discussion has surfaced
+a single crisp either/or that the conversation cannot resolve on its own (e.g.
+"Postgres or SQLite?"). It is a fallback, not a default. Hard limits:
+- **Never open a discussion with it.** The user describes the feature first, in
+  prose. A question tool as the first move is always wrong here.
+- **Never use it as a survey** — don't fire several bundled questions to scope a
+  feature. That replaces the conversation instead of advancing it.
+- **Never use it to ask "is the doc ready"** or to seek approval — those are plain
+  conversational questions.
+Default to asking in prose. Reach for the tool only when a genuine binary fork
+needs a clean pick.
 
 ## Step 0 — Ground
 
@@ -75,6 +107,13 @@ Confirm the scaffold with the user before moving to the first milestone.
 
 The feature at a high level: **what it is, how it works, how it is used.** No
 stack, no libraries, no file layout — that is architecture.
+
+**Begin here by asking the user to describe the feature at length, in their own
+words — then stop and listen.** This is the start of the whole milestone; do not
+lead with a structure, a summary of the idea notes, or options. Even if idea notes
+or a backlog already exist, treat them as raw input the user will shape, not as
+your opening proposal. Let the user's description be the first content, then move
+into conversation and clarifying questions per the order above.
 
 Discuss → confirm → write (template below) → approve. The milestone folder is
 created now: `docs/milestone-N-<slug>/`, where N is the next integer and `<slug>`
