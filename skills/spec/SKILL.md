@@ -45,8 +45,9 @@ Three docs are produced in order: `design.md` → `architecture.md` →
    to disk.**
 2. **Confirm → write.** Only when the user signals they are happy with the
    discussion, write the doc.
-3. **Approve → advance.** Show the written doc. Only when the user approves it,
-   move to the next doc.
+3. **Approve → advance.** Show the written doc **in full, in chat** — paste its
+   complete content, never just the file path. The user approves from the chat,
+   not by opening files. Only when the user approves it, move to the next doc.
 
 **IMPORTANT — hard rules:**
 - **Never write a doc before the user confirms the discussion is settled.** If you
@@ -155,16 +156,28 @@ time.
 ## Doc quality
 
 Every doc follows the global **Writing docs** rules: precise, concise, no
-personality, no fluff, no timelines. After writing each doc, run a **doc-critic**
-pass — dispatch a subagent (read-only) with the doc and this instruction:
+personality, no fluff, no timelines. Apply the rules below while writing — there
+is no separate critic pass. Write for a reader with small working memory who was
+not in the conversation:
 
-> Review this planning doc against these rules: precise and concise; no
-> personality or fluff; no restatement; no references to conversations, plans, or
-> anything outside the doc; every statement load-bearing. Return a short list of
-> specific cuts/tightenings. Do not rewrite — list findings only.
+1. **Lead with the load-bearing fact.** The first sentence of every section
+   states the thing itself — what it is, what was decided. Context after, if at
+   all.
+2. **Every statement earns its place.** If deleting a sentence changes nothing
+   the reader would build or decide, delete it.
+3. **Plain words for concrete things.** Name the actual API, file, or behavior
+   instead of an abstraction ("the relevant subsystem"). No term a newcomer
+   can't resolve from the doc itself.
+4. **Facts, not narration.** No "we discussed", "as mentioned", "the plan is
+   to". State what is, not how it came to be. Docs never reference
+   conversations or anything outside `docs/`.
+5. **Concrete over vague.** Numbers, names, and commands over "some",
+   "various", "appropriate".
 
-Apply the clear cuts before showing the doc to the user. The target is a doc that
-reads cleanly to someone who was not in the conversation.
+Pre-show check — before showing the doc to the user, reread it and delete: any
+opener restating the title, hedging that carries no real uncertainty, and any
+sentence arguing the doc is right. Then verify: does a reader who skims only
+headers and first sentences still get the correct mental model? If yes, show it.
 
 ---
 
