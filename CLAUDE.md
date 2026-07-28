@@ -1,3 +1,7 @@
+# Writing
+
+- NEVER use em dashes. Anywhere: docs, descriptions, comments, chat, commit messages. Use a colon, comma, parentheses, or a separate sentence instead.
+
 # Writing docs
 
 - Be precise and concise. Write without personality; provide only the fundamental truths needed to explain.
