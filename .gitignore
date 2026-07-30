@@ -1,16 +1,25 @@
-# Ignore everything by default — only config is tracked.
-# This whitelist approach means new transcripts, caches, and any future secrets
+# Ignore everything by default: only config is tracked.
+# Whitelist approach means new transcripts, caches, and any future secrets
 # are ignored automatically; nothing is committed unless explicitly allowed below.
 *
 
 !.gitignore
 !CLAUDE.md
-!skills/
-!skills/**
 
-skills/job-search/
-skills/push-claude-configs/
-skills/comment-cleanup/
-skills/copilot-comments/
-skills/create-issue/
-skills/quick-pr/
+# Skills are whitelisted individually; a new skill stays local until added here.
+!skills/
+skills/*
+!skills/adhd/
+!skills/adhd/**
+!skills/bro/
+!skills/bro/**
+!skills/clean/
+!skills/clean/**
+!skills/codex/
+!skills/codex/**
+!skills/deslop/
+!skills/deslop/**
+!skills/slice/
+!skills/slice/**
+!skills/spec/
+!skills/spec/**
