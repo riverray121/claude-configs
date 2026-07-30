@@ -1,127 +1,70 @@
 ---
 name: deslop
-description: Find and remove AI slop from a codebase — redundant comments, defensive cruft, type escapes, premature abstraction, dead code, naming noise, and architecture smells. Both modes run the same swarm of concern-specialized agents plus two independent codex passes; the only difference is scope — `/deslop` reviews the diff against main, `/deslop full` reviews the whole repo. Presents findings as a report to approve or reject before anything is applied. Use after AI-assisted coding, before review, or for a whole-repo cleanup pass.
+description: Clean AI slop out of a codebase in five sequential passes: architecture, DRY, per-file Opus review, comments, and security/bugs. `/deslop` covers the working tree plus commits vs main; `/deslop full` covers the whole repo; add `--codex` for an extra outside review by codex. Fixes are applied directly, then every change and every unfixed issue is reported. Use after AI-assisted coding, before review, or for a whole-repo cleanup.
 ---
 
 # deslop
 
-Identify AI slop, propose a fix for each instance, and apply only what the user
-approves. What counts as slop is defined in `catalog.md` — the single source of
-truth. This file is the **how**; the catalog is the **what**.
-
-The skill is stack-agnostic: it discovers the file set, layers, and formatter from
-the repo rather than assuming any language or framework.
-
-Every mode runs the identical pipeline — the swarm plus two codex passes. Mode
-only changes which files are in scope.
+Find and fix AI slop. Apply fixes as each pass finds them, then report everything at the end.
 
 ## Modes
 
-| Invocation | Scope | Pipeline |
-|---|---|---|
-| `/deslop` | working tree + commits vs `main` | swarm + codex |
-| `/deslop full` | whole repo | swarm + codex |
-| `/deslop <path>` | a file or directory | swarm + codex |
-| add `--no-codex` | — | skip the codex passes (faster) |
+| Invocation | Scope |
+|---|---|
+| `/deslop` | working tree + commits vs `main` |
+| `/deslop full` | whole repo |
 
-Parse the argument for a mode word (`full`), a path, and the `--no-codex` flag.
-Default mode is `diff`.
+Add `--codex` to append an outside review by codex.
 
-## Workflow
+## Setup
 
-### 0. Ground in the repo's own rules
-Read any contributor/agent guide (`AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`) and
-fold its conventions into the catalog's relativity rule. Project rules win.
+1. Read the repo's contributor and agent guides (`CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`). Project conventions win over anything here.
+2. Resolve scope. Default mode: `git diff --name-only main` plus untracked files. Full mode: `git ls-files`. Keep only source files. Never touch vendored or generated code, lockfiles, fixtures, or build output.
 
-### 1. Scope
-Run the pre-filter to get the in-scope file list and regex hint report:
-```
-bash ~/.claude/skills/deslop/scripts/scan.sh <diff|full|path> [path]
-```
-Lines before `FILES:` are prioritization hints (file → hit count → categories).
-The list after `FILES:` is the files to review. Empty list → report "no slop
-candidates in scope" and stop.
+## Passes
 
-### 2. Run the swarm
-Always fan out via the Workflow tool — every mode uses it; only the `files` set
-from step 1 differs. This skill is global, so resolve its directory to an absolute
-path from your home dir first (subagents read the catalog with absolute paths — a
-`~`-prefixed path won't work): `SKILL_DIR="$HOME/.claude/skills/deslop"`.
-```
-Workflow({ scriptPath: "<SKILL_DIR>/deslop-workflow.js",
-           args: { root: "<repo abs path>", files: [<the FILES: list>],
-                   catalog: "<SKILL_DIR>/catalog.md" } })
-```
-Substitute `<SKILL_DIR>` with the resolved absolute path (e.g.
-`/Users/alice/.claude/skills/deslop`) — never a literal `~` or `$HOME`.
-It returns `{ lineFindings, archFindings, stats }`. The swarm separates concerns:
-specialized **lens agents** (comments, defensive/types, anti-patterns, dead code)
-each sweep file shards for their family only, while **architecture agents** review
-each module and the seams between modules for cross-file smells.
+Run in order. Each pass applies its fixes before the next starts. Record every change (what and why) and every issue seen but not fixed; the report needs both.
 
-### 3. Codex passes (always, unless `--no-codex`)
-Codex is slow — run it as two independent agents, batched, never per file:
-- **Architecture pass** — ask codex to evaluate the codebase's architecture for
-  structural slop and report findings.
-- **Code pass** — ask codex for one review pass over the in-scope code for slop
-  and anti-patterns.
+### 1. Architecture
+Review structure across the in-scope files: layering, module boundaries, misplaced responsibility, needless indirection, premature abstraction. Fix what has a clear mechanical resolution. Larger restructures go in the report as not acted on.
 
-Scope codex to match the mode: the changed files for `diff`/`path`, the whole repo
-for `full`. Invoke both via the `codex` skill. Treat codex as an independent
-reviewer: where a codex finding corroborates a Claude finding, tag it
-`corroborated`; codex-only findings get source `codex` and are listed prominently.
+### 2. DRY
+Find duplicated and near-duplicated logic. Consolidate into the existing shared location, or create one if the codebase has an obvious spot. Do not invent abstractions for two-line coincidences.
 
-### 4. Write the report
-Assign each finding a short ID (`L1`, `L2`… line; `A1`… architecture; `C1`… codex).
-Write `deslop-report.md` to `docs/` if that directory exists, otherwise to the repo
-root. The report is a scratch artifact, not a kept doc — note its path so step 6
-can remove it.
+### 3. Per-file review
+Fan out one Opus 5 agent per in-scope file (Agent tool, `model: "opus"`). Each agent reads its file in full, judges it against the conventions of the surrounding code, and fixes slop: dead code, defensive cruft on trusted internal paths, type escapes, naming noise, idioms that diverge from the rest of the file. Run agents in parallel; batch several small files per agent when the file count is large.
 
-```
-# Deslop report — <mode>
-<N> line findings, <M> architecture findings across <K> files. Codex: <on|off>.
-Approve with: all · high-confidence · <ids> · none. Nothing is applied until you choose.
+### 4. Comments
+Review every comment in scope. Delete comments that restate the code. Keep comments that explain why, rewriting them where needed. Every comment that remains must follow these rules:
 
-## Architecture
-### A1 · <category> · sev <s>/conf <c> · source <claude|codex|corroborated>
-Files: <files>
-Why: <one line>
-Fix: <description>  (auto|manual)
+- Never reference external conversations.
+- Never reference design documentation or similar.
+- Lead with the point. No preamble, no recap, no closers.
+- One idea per line. Short sentences. If a sentence has a comma chain, split it.
+- Number anything sequential or plural.
+- State each fact with its consequence or fix in the same line.
+- No tangents, hedges, or "by the way". If something is optional context, drop it.
+- Avoid jargon. Speak coherently.
 
-## Line findings — <file>
-### L3 · <category> · sev <s>/conf <c> · L<line> · source <claude|codex|corroborated>
-Why: <one line>
-```diff
-- <before>
-+ <after>
-```
-```
-Sort within each section high-confidence first. Show `source` whenever codex ran;
-omit it only under `--no-codex`.
+### 5. Security, bugs, issues
+Traditional review pass: real bugs, security problems, broken edge cases, error handling that swallows failures. Fix what is safe to fix. Anything risky or behavior-changing you are unsure about goes in the report instead of being patched.
 
-### 5. Present & approve
-Show a compact summary: counts by category and confidence, the headline
-architecture findings, and any codex-only or contested findings. Ask the user to
-approve by ID, by bucket (`all`, `high-confidence`), or reject. **Apply nothing
-before approval.**
+### 6. Codex (only with `--codex`)
+Invoke the `codex` skill and ask codex to review the PR (the in-scope diff; the whole repo in full mode). Evaluate each finding. Fix the valid ones. Note rejected findings and the reason in the report.
 
-### 6. Apply
-For each approved finding, apply the `before`→`after` edit. Then run the project's
-configured formatter on touched files (detect it: Prettier/ESLint, Ruff/Black,
-gofmt, rustfmt, etc.; skip if none) so edits match house style. `manual`
-findings are not auto-applied — leave them for the user. Do **not** commit. End
-with a 1–3 sentence summary of what changed and what was deferred.
+## Finish
 
-### 7. Clean up the report
-Once the approved findings are applied and any `manual` ones have been surfaced to
-the user, **delete `deslop-report.md`** — it is a transient artifact and should not
-be left in `docs/` or committed. If `manual` findings remain that the user wants to
-keep for later, ask before deleting; otherwise remove it.
+1. Run the project's formatter on touched files, if one is configured.
+2. Run the relevant tests and typecheck. Report failures honestly.
+3. Do not commit.
 
-## Guardrails
-- Honor every hard guardrail in `catalog.md`: never touch vendored/third-party
-  code, generated files, lockfiles, data/fixtures, or anything `.gitignore`d.
-- Never remove a WHY comment. Flag comments that reference conversations or the
-  dev process, and rewrite or delete them.
-- Propose, never silently apply. Semantic/behavioral rewrites are `manual`.
-- Leave formatting to the autoformatter; never raise formatting-only findings.
+## Report
+
+Write the report without jargon, simply and concisely, like one human talking to another.
+
+In chat, for each change:
+
+- what was changed
+- the problem, and why the change fixes it
+
+Then list identified issues that were not acted on, each with the reason (risky, needs a decision, out of scope).

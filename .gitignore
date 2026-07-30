@@ -5,8 +5,12 @@
 
 !.gitignore
 !CLAUDE.md
-!settings.json
 !skills/
 !skills/**
 
 skills/job-search/
+skills/push-claude-configs/
+skills/comment-cleanup/
+skills/copilot-comments/
+skills/create-issue/
+skills/quick-pr/
