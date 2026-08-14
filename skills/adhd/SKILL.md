@@ -1,7 +1,6 @@
 ---
 name: adhd
 description: 'ADHD-friendly output - lead with the point, short numbered lists, one idea per line, no preamble or tangents. `/adhd` rewrites the last message (or given text) once; `/adhd on` applies the rules to every response until "adhd off".'
-disable-model-invocation: true
 ---
 
 # adhd

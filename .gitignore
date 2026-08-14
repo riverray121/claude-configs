@@ -23,3 +23,5 @@ skills/*
 !skills/slice/**
 !skills/spec/
 !skills/spec/**
+!skills/write-like-elijah/
+!skills/write-like-elijah/**
