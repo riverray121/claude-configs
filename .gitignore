@@ -19,6 +19,8 @@ skills/*
 !skills/codex/**
 !skills/deslop/
 !skills/deslop/**
+!skills/remote-session/
+!skills/remote-session/**
 !skills/slice/
 !skills/slice/**
 !skills/spec/
